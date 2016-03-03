@@ -18,7 +18,5 @@ int main(int argc, char *argv[])
     Intelligent_Scissor w;
     w.show();
 
-    //Mat image;
-
     return a.exec();
 }

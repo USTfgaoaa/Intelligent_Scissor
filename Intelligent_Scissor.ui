@@ -6,12 +6,24 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>991</width>
-    <height>603</height>
+    <width>1080</width>
+    <height>680</height>
    </rect>
   </property>
+  <property name="minimumSize">
+   <size>
+    <width>1080</width>
+    <height>680</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>1080</width>
+    <height>680</height>
+   </size>
+  </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Intelligent_Scissor</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <widget class="QLabel" name="label">
@@ -19,8 +31,8 @@
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>1191</width>
-      <height>651</height>
+      <width>911</width>
+      <height>591</height>
      </rect>
     </property>
     <property name="mouseTracking">
@@ -30,121 +42,196 @@
      <string/>
     </property>
    </widget>
-   <widget class="QLabel" name="label_2">
-    <property name="geometry">
-     <rect>
-      <x>710</x>
-      <y>590</y>
-      <width>67</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Coord</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="pushButton">
-    <property name="geometry">
-     <rect>
-      <x>1020</x>
-      <y>10</y>
-      <width>99</width>
-      <height>27</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Test</string>
-    </property>
-   </widget>
    <widget class="QPushButton" name="Start">
     <property name="geometry">
      <rect>
-      <x>890</x>
+      <x>470</x>
       <y>0</y>
-      <width>99</width>
+      <width>121</width>
       <height>27</height>
      </rect>
     </property>
     <property name="text">
-     <string>Start</string>
+     <string>Start (Ctrl+Q)</string>
+    </property>
+    <property name="shortcut">
+     <string>Ctrl+Q</string>
     </property>
    </widget>
    <widget class="QPushButton" name="Finish">
     <property name="geometry">
      <rect>
-      <x>890</x>
-      <y>30</y>
-      <width>99</width>
+      <x>590</x>
+      <y>0</y>
+      <width>121</width>
       <height>27</height>
      </rect>
     </property>
     <property name="text">
-     <string>Finish</string>
+     <string>Finish (Return)</string>
+    </property>
+    <property name="shortcut">
+     <string>Return</string>
+    </property>
+    <property name="checkable">
+     <bool>false</bool>
+    </property>
+    <property name="checked">
+     <bool>false</bool>
+    </property>
+    <property name="autoRepeat">
+     <bool>false</bool>
+    </property>
+    <property name="autoExclusive">
+     <bool>false</bool>
     </property>
    </widget>
    <widget class="QPushButton" name="Undo">
     <property name="geometry">
      <rect>
-      <x>890</x>
-      <y>60</y>
-      <width>99</width>
+      <x>710</x>
+      <y>0</y>
+      <width>121</width>
       <height>27</height>
      </rect>
     </property>
     <property name="text">
-     <string>Undo</string>
+     <string>Undo (Ctrl+E)</string>
+    </property>
+    <property name="shortcut">
+     <string>Ctrl+E</string>
     </property>
    </widget>
    <widget class="QPushButton" name="Restart">
     <property name="geometry">
      <rect>
-      <x>890</x>
-      <y>90</y>
-      <width>99</width>
+      <x>830</x>
+      <y>0</y>
+      <width>121</width>
       <height>27</height>
      </rect>
     </property>
     <property name="text">
-     <string>Restart</string>
+     <string>Restart (Ctrl+R)</string>
+    </property>
+    <property name="shortcut">
+     <string>Ctrl+R</string>
     </property>
    </widget>
    <widget class="QPushButton" name="Mask">
     <property name="geometry">
      <rect>
-      <x>890</x>
-      <y>120</y>
-      <width>99</width>
+      <x>690</x>
+      <y>30</y>
+      <width>161</width>
       <height>27</height>
      </rect>
     </property>
     <property name="text">
-     <string>Mask</string>
+     <string>Get Mask (Ctrl+A)</string>
     </property>
-   </widget>
-   <widget class="QPushButton" name="Debug">
-    <property name="geometry">
-     <rect>
-      <x>890</x>
-      <y>150</y>
-      <width>99</width>
-      <height>27</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Debug</string>
+    <property name="shortcut">
+     <string>Ctrl+A</string>
     </property>
    </widget>
    <widget class="QPushButton" name="Cut">
     <property name="geometry">
      <rect>
-      <x>890</x>
-      <y>180</y>
-      <width>99</width>
+      <x>950</x>
+      <y>0</y>
+      <width>121</width>
       <height>27</height>
      </rect>
     </property>
     <property name="text">
-     <string>Cut</string>
+     <string>Cut (Alt+W)</string>
+    </property>
+    <property name="shortcut">
+     <string>Alt+W</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="SaveMask">
+    <property name="geometry">
+     <rect>
+      <x>860</x>
+      <y>30</y>
+      <width>161</width>
+      <height>27</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Save Mask (Ctrl+T)</string>
+    </property>
+    <property name="shortcut">
+     <string>Ctrl+T</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_2">
+    <property name="geometry">
+     <rect>
+      <x>540</x>
+      <y>30</y>
+      <width>141</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Save Result (Ctrl+Y)</string>
+    </property>
+    <property name="shortcut">
+     <string>Ctrl+Y</string>
+    </property>
+   </widget>
+   <widget class="Line" name="line">
+    <property name="geometry">
+     <rect>
+      <x>450</x>
+      <y>0</y>
+      <width>20</width>
+      <height>71</height>
+     </rect>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Vertical</enum>
+    </property>
+   </widget>
+   <widget class="Line" name="line_2">
+    <property name="geometry">
+     <rect>
+      <x>460</x>
+      <y>60</y>
+      <width>621</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+   </widget>
+   <widget class="Line" name="line_3">
+    <property name="geometry">
+     <rect>
+      <x>450</x>
+      <y>70</y>
+      <width>631</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+   </widget>
+   <widget class="Line" name="line_4">
+    <property name="geometry">
+     <rect>
+      <x>440</x>
+      <y>0</y>
+      <width>20</width>
+      <height>81</height>
+     </rect>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Vertical</enum>
     </property>
    </widget>
   </widget>
@@ -154,7 +241,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>991</width>
+     <width>1080</width>
      <height>25</height>
     </rect>
    </property>
@@ -190,60 +277,64 @@
    <property name="text">
     <string>Load</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+1</string>
+   </property>
   </action>
   <action name="actionSave">
    <property name="text">
     <string>Save</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+2</string>
    </property>
   </action>
   <action name="actionAbout">
    <property name="text">
     <string>About</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+3</string>
+   </property>
   </action>
   <action name="actionHelp">
    <property name="text">
     <string>Help</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+4</string>
    </property>
   </action>
   <action name="actionZoom_x1">
    <property name="text">
     <string>Zoom x1</string>
    </property>
+   <property name="shortcut">
+    <string>Alt+2</string>
+   </property>
   </action>
   <action name="actionZoom_x2">
    <property name="text">
     <string>Zoom x2</string>
    </property>
-  </action>
-  <action name="actionFinish">
-   <property name="text">
-    <string>Finish</string>
-   </property>
-  </action>
-  <action name="actionExit">
-   <property name="text">
-    <string>Exit</string>
+   <property name="shortcut">
+    <string>Alt+3</string>
    </property>
   </action>
   <action name="actionZoom_x1_2">
    <property name="text">
     <string>Zoom x1/2</string>
    </property>
+   <property name="shortcut">
+    <string>Alt+1</string>
+   </property>
   </action>
   <action name="actionCost_Graph">
    <property name="text">
     <string>Cost Graph</string>
    </property>
-  </action>
-  <action name="actionUndo">
-   <property name="text">
-    <string>Undo</string>
-   </property>
-  </action>
-  <action name="actionRedo">
-   <property name="text">
-    <string>Restart</string>
+   <property name="shortcut">
+    <string>Alt+4</string>
    </property>
   </action>
   <action name="actionExit_2">

@@ -12,7 +12,16 @@ QImage Mat2QImage(cv::Mat const& src)
      cvtColor(src, temp,CV_BGR2RGB); // cvtColor Makes a copt, that what i need
      QImage dest((const uchar *) temp.data, temp.cols, temp.rows, temp.step, QImage::Format_RGB888);
      dest.bits(); // enforce deep copy, see documentation
-     // of QImage::QImage ( const uchar * data, int width, int height, Format format )
+     return dest;
+}
+
+QImage Mat2QImage_mask(cv::Mat const& src)
+{
+     cv::Mat temp; // make the same cv::Mat
+     temp = src.clone();
+     //cvtColor(src, temp,CV_BGR2GRAY); // cvtColor Makes a copt, that what i need
+     QImage dest((const uchar *) temp.data, temp.cols, temp.rows, temp.step, QImage::Format_Indexed8);
+     dest.bits(); // enforce deep copy, see documentation
      return dest;
 }
 
@@ -23,6 +32,7 @@ cv::Mat QImage2Mat(QImage const& src)
      cvtColor(tmp, result,CV_BGR2RGB);
      return result;
 }
+
 
 Intelligent_Scissor::Intelligent_Scissor(QWidget *parent) :
     QMainWindow(parent),
@@ -36,10 +46,12 @@ Intelligent_Scissor::Intelligent_Scissor(QWidget *parent) :
 
     is_load = false;
     is_start = false;
-    is_finish = false;
+    //is_finish = false;
     mouse_press = false;
     is_finished = false;
     mission_finish = false;
+    is_cut = false;
+
     last_end_row = inf;
     last_end_col = inf;
     press_count = 0;
@@ -48,6 +60,7 @@ Intelligent_Scissor::Intelligent_Scissor(QWidget *parent) :
     seed_x = 60;
     seed_y = 60;
 
+    //final_mask = cv::Mat(origin.rows, origin.cols, CV_8UC3, Scalar(0,0,0));
     image_history.clear();
     mask_history.clear();
 
@@ -74,18 +87,20 @@ bool Intelligent_Scissor::eventFilter(QObject *obj, QEvent *event)
     if(!is_start)
         return false;
 
-    if(!is_finished)
+    if(is_finished)
         return false;
 
+    //cout<<"mouse press :"<<mouse_press<<endl;
+    //cout<<"mouse move ok ..."<<endl;
     end_col = mouseEvent->pos().x();
     end_row = mouseEvent->pos().y();
 
      if(abs(end_col - first_pt_col) < 5 && abs(end_row - first_pt_row) < 5 && press_count > 1)
         {
-            cout<<"find loop closure ..."<<endl;
+            //cout<<"find loop closure ..."<<endl;
             end_col = first_pt_col;
             end_row = first_pt_row;
-            //is_start = false;
+
             is_finished = true;
          }
 
@@ -95,11 +110,11 @@ bool Intelligent_Scissor::eventFilter(QObject *obj, QEvent *event)
     last_end_col = end_col;
     last_end_row = end_row;
 
-    cout<<"restart & start, now OK ... "<<endl;
+   // cout<<"restart & start, now OK ... "<<endl;
     pair<cv::Mat, cv::Mat> result_mask = draw(end_row, end_col);
     cv::Mat result = result_mask.first;
     mask_to_find   = result_mask.second.clone();
-    cout<<"restart & start, now OK ... after drawing "<<endl;
+    //cout<<"restart & start, now OK ... after drawing "<<endl;
     QPixmap new_pixmap = QPixmap::fromImage(Mat2QImage( result ));
 
     ui->label->setPixmap(new_pixmap);
@@ -125,7 +140,7 @@ void Intelligent_Scissor::on_actionSave_triggered()
 
 void Intelligent_Scissor::on_actionAbout_triggered()
 {
-     QMessageBox::information(this, tr("Information"),tr("Intelligent Scissor, made by BBGF!"));
+     QMessageBox::information(this, tr("Information"),tr("Intelligent Scissor, made by GAO Fei"));
 }
 
 void Intelligent_Scissor::on_actionHelp_triggered()
@@ -138,8 +153,10 @@ void Intelligent_Scissor::Zoom_in_out(int index)
     if(!is_load)
         return;
 
-     tmp = src;
-     dst = tmp;
+     tmp = src.clone();
+     //dst = tmp.clone();
+     //dst = tmp.resize((tmp.cols*index, tmp.rows*index));
+     Mat dst(tmp.cols*index, tmp.rows*index, CV_8UC3, Scalar(0,0,255));
 
      cv::Mat new_mask, old_mask;
      old_mask = mask_history[mask_history.size()-1];
@@ -158,11 +175,11 @@ void Intelligent_Scissor::Zoom_in_out(int index)
      src = dst;
      zoom_coef = zoom_coef * index;
 
-     imshow( window_name, dst );
+     //imshow( window_name, dst );
 
      row_up = src.rows;
      col_up = src.cols;
-    cout<<"New row and col linit: "<<row_up<<" , "<<col_up<<endl;
+    //cout<<"New row and col linit: "<<row_up<<" , "<<col_up<<endl;
 
      image_history.clear();
      image_history.push_back(src);
@@ -196,7 +213,7 @@ void Intelligent_Scissor::on_actionZoom_x1_triggered()
         return;
 
     is_start = false;
-    is_finish = false;
+    //is_finish = false;
     mouse_press = false;
     is_finished = false;
     mission_finish = false;
@@ -204,7 +221,7 @@ void Intelligent_Scissor::on_actionZoom_x1_triggered()
 
     zoom_coef = 1.0;
     src = src_backup;
-    imshow( window_name, src );
+    //imshow( window_name, src );
 
     QPixmap new_pixmap = QPixmap::fromImage(Mat2QImage( src ));
 
@@ -225,9 +242,22 @@ void Intelligent_Scissor::on_actionZoom_x2_triggered()
 
 void Intelligent_Scissor::save()
 {
-    QString path = QFileDialog::getSaveFileName(this, tr("Open Image"), ".", tr("Image Files(*.jpg *.png *.bmp)"));
-    QImage image_save = Mat2QImage(output_backup);
-    image_save.save(path);
+    if(!is_cut )
+        return;
+
+    QString path = QFileDialog::getSaveFileName(this, tr("Save Image"), ".", tr("Image Files(*.jpg *.png *.bmp)"));
+    if(path.length() == 0)
+    {
+            QMessageBox::information(NULL, tr("Path"), tr("You didn't select any files."));
+            //path = QFileDialog::getOpenFileName(this, tr("Open Image"), ".", tr("Image Files(*.jpg *.png *.bmp)"));
+    }
+    else
+    {
+            //QImage image_cut = Mat2QImage(output_backup);
+            //image_cut.save(path);
+        std::string utf8_path = path.toUtf8().constData();
+         imwrite( utf8_path, output_backup );
+    }
 }
 
 void Intelligent_Scissor::open()
@@ -247,10 +277,9 @@ void Intelligent_Scissor::open()
             src = image;
             src_backup = image;
 
-            window_name = "Display window";
-            namedWindow( window_name, WINDOW_AUTOSIZE );// Create a window for display.
-
-            imshow( "Display window", image );
+            //window_name = "Display window";
+            //namedWindow( window_name, WINDOW_AUTOSIZE );// Create a window for display.
+            //imshow( "Display window", image );
 
             QImage  image_in(path);
             image_hold = image_in;
@@ -268,7 +297,7 @@ void Intelligent_Scissor::open()
 
             row_up = image.rows;
             col_up = image.cols;
-            cout<<"row and col limit: "<<row_up<<" , "<<col_up<<endl;
+            //cout<<"row and col limit: "<<row_up<<" , "<<col_up<<endl;
 
             image_history.push_back((image));
             cost_graph = pre_process(image);
@@ -283,7 +312,7 @@ void Intelligent_Scissor::open()
 void Intelligent_Scissor::mousePressEvent(QMouseEvent *e)
 {
 
-   ui->label_2->setText(tr("(%1,%2)").arg(e->x()).arg(e->y()));
+   //ui->label_2->setText(tr("(%1,%2)").arg(e->x()).arg(e->y()));
    mouse_x = e->x();
    mouse_y = e->y();
 
@@ -298,7 +327,9 @@ void Intelligent_Scissor::mousePressEvent(QMouseEvent *e)
    if(!is_start)
        return;
 
-   printf("Now mouse position is: %d, %d\n",mouse_x, mouse_y);
+   //cout<<"start and mouse press ..."<<endl;
+
+   //printf("Now mouse position is: %d, %d\n",mouse_x, mouse_y);
 
    mouse_press = true;
 
@@ -313,13 +344,14 @@ void Intelligent_Scissor::mousePressEvent(QMouseEvent *e)
    start_col_his.push_back(start_col);
    start_row_his.push_back(start_row);
 
-   cout<<"press_count:  "<<press_count<<endl;
-   cout<<"size of start_row history:  "<<start_col_his.size()<<endl;
+   //cout<<"press count: "<<press_count<<endl;
+   //cout<<"press_count:  "<<press_count<<endl;
+   //cout<<"size of start_row history:  "<<start_col_his.size()<<endl;
    if(press_count == 1)
    {
        first_pt_col = start_col;
        first_pt_row = start_row;
-       cout<<"first start point ... "<<first_pt_row<<" , "<<first_pt_col<<endl;
+       //cout<<"first start point ... "<<first_pt_row<<" , "<<first_pt_col<<endl;
    }
    else
    {
@@ -327,7 +359,7 @@ void Intelligent_Scissor::mousePressEvent(QMouseEvent *e)
         mask_history.push_back(mask_to_find);
    }
 
-    cout<<"start point ... "<<start_row<<" , "<<start_col<<endl;
+    //cout<<"start point ... "<<start_row<<" , "<<start_col<<endl;
    if(abs(start_col - first_pt_col) < 8 && abs(start_row - first_pt_row) < 8 && press_count > 1)
         if(is_finished)
             is_start = false;
@@ -398,7 +430,7 @@ void Intelligent_Scissor::process(int start_row, int start_col)
         node_array.push_back(row_node);
     }
 
-    cout<<"prepare path finding ... "<<endl;
+//    /cout<<"prepare path finding ... "<<endl;
     while (!pq.empty())
     {
         Node q = pq.top();
@@ -466,13 +498,13 @@ void Intelligent_Scissor::process(int start_row, int start_col)
             }
         }
     }
-     is_finished = true;
-     cout<<"path finding finished ... "<<endl;
+     //is_finished = true;
+     //cout<<"path finding finished ... "<<endl;
 }
 
 pair<cv::Mat, cv::Mat> Intelligent_Scissor::draw(int end_row, int end_col)
 {
-
+    //cout<<"draw function ,.."<<endl;
     result = image_history[image_history.size() -1].clone();//src_backup.clone(); // FIX ME: Store all image in image_history vector ...
     //cv::Mat M(result.rows, result.cols, CV_8UC3, Scalar(0,0,0));   //result.clone();
 
@@ -498,7 +530,7 @@ pair<cv::Mat, cv::Mat> Intelligent_Scissor::draw(int end_row, int end_col)
 
     }
     cv::Point seed(start_col, start_row);
-    cv::circle(result, seed, 5, cv::Scalar(128),3);
+    cv::circle(result, seed, 3, cv::Scalar(128,128,128), 2);
 
 
     return make_pair(result, mask_to_find);
@@ -511,7 +543,7 @@ void Intelligent_Scissor::on_actionCost_Graph_triggered()
     imshow("Cost Graph", cost_graph);
 
 }
-
+/*
 void Intelligent_Scissor::on_pushButton_clicked()
 {
     //priority_queue<int> qi;
@@ -527,24 +559,38 @@ void Intelligent_Scissor::on_pushButton_clicked()
             cout<<qi.top()<<" "<<endl;
             qi.pop();
         }
-}
+}*/
 
 void Intelligent_Scissor::on_Finish_clicked()
 {
+    if(is_finished)
+    {
+   // cout<<"finish ok .."<<endl;
     is_start = false;
     mission_finish = true;
+    }
 }
 
 void Intelligent_Scissor::on_Start_clicked()
 {
         is_start = true;
+        mission_finish = false;
 }
 
 void Intelligent_Scissor::on_Undo_clicked()
 {
+    undo();
+}
+
+void Intelligent_Scissor::undo()
+{
     if(start_row_his.size() - 1 < 1 || press_count < 1)
         return;
 
+    if(image_history.empty())
+        return;
+    if(mission_finish)
+        return;
     press_count --;
     image_history.pop_back();
     mask_history.pop_back();
@@ -558,16 +604,18 @@ void Intelligent_Scissor::on_Undo_clicked()
         process(start_row, start_col);
     }
 }
-
 void Intelligent_Scissor::on_Restart_clicked()
 {
+    if(!is_load)
+        return;
     //is_load = false;
     is_start = false;
-    is_finish = false;
+    //is_finish = false;
     mouse_press = false;
     is_finished = false;
     press_count = 0;
     mission_finish = false;
+    is_cut = false;
 
     start_row = inf;
     start_col = inf;
@@ -594,7 +642,7 @@ void Intelligent_Scissor::on_Restart_clicked()
 
 void Intelligent_Scissor::on_actionExit_2_triggered()
 {
-        return;
+        this->close();
 }
 
 
@@ -602,26 +650,24 @@ void Intelligent_Scissor::on_Mask_clicked()
 {
     if(!mission_finish)
         return;
+    if(mask_history.empty())
+        return;
 
-cv::Point seed(seed_x,seed_y);
+    cv::Point seed(seed_x,seed_y);
 
-cv::Mat mask;
-//cv::Canny(mask_to_find, mask, 100, 200);
+    cv::Mat mask;
 
-cv::cvtColor(mask_to_find,mask,CV_BGR2GRAY);
+    cv::cvtColor(mask_to_find,mask,CV_BGR2GRAY);
+    cv::copyMakeBorder(mask, mask, 1, 1, 1, 1, cv::BORDER_REPLICATE);
 
-cv::copyMakeBorder(mask, mask, 1, 1, 1, 1, cv::BORDER_REPLICATE);
-       //cv::imshow("Medium Mask", mask);
-
-uchar fillValue = 255;
-cv::floodFill(mask_to_find, mask, seed, cv::Scalar(255) ,0, cv::Scalar(), cv::Scalar(), 4 | cv::FLOODFILL_MASK_ONLY | (fillValue << 8));
-cv::imshow("Final Mask", mask);
-
-final_mask = mask;
-
+    uchar fillValue = 255;
+    cv::floodFill(mask_to_find, mask, seed, cv::Scalar(255) ,0, cv::Scalar(), cv::Scalar(), 4 | cv::FLOODFILL_MASK_ONLY | (fillValue << 8));
+    final_mask = mask.clone();
+    //cv::imshow("Final Mask", final_mask);
 }
 
-void Intelligent_Scissor::on_Debug_clicked()
+/*
+ * void Intelligent_Scissor::on_Debug_clicked()
 {
     int i = 162;// col_y = 200;
     for(int j = 200; j< 209; j++)
@@ -639,13 +685,18 @@ void Intelligent_Scissor::on_Debug_clicked()
         cout<<"###################################"<<endl;
     }
         return;
-}
+}*/
 
 void Intelligent_Scissor::on_Cut_clicked()
 {
-
     if(!mission_finish)
         return;
+    if(mask_history.empty())
+        return;
+    if(!is_finished)
+        return;
+
+    //cout<<"Now Ok here ..."<<endl;
     cv::Mat origin = src.clone();
     cv::Mat mask  = mask_history[mask_history.size() -1];
 
@@ -654,7 +705,7 @@ void Intelligent_Scissor::on_Cut_clicked()
     cv::Mat output = cv::Mat(origin.rows, origin.cols, CV_8UC3, Scalar(0,0,0));
     //origin.copyTo(mask,output);
 
-    imshow("origin pic", origin);
+    //imshow("origin pic", origin);
 
     for(int i = 0; i < final_mask.rows; i++ )
         for(int j =0; j< final_mask.cols; j++)
@@ -662,7 +713,7 @@ void Intelligent_Scissor::on_Cut_clicked()
             if(final_mask.at<uchar>(i,j) == 255)
                 output.at<cv::Vec3b>(i,j) = origin.at<cv::Vec3b>(i,j);
 
-    imshow("cut pic", output);
+    //imshow("cut pic", output);
 
     output_backup = output;
     QPixmap new_pixmap = QPixmap::fromImage(Mat2QImage( output));
@@ -672,5 +723,47 @@ void Intelligent_Scissor::on_Cut_clicked()
     ui->label->setPixmap(new_pixmap);
     ui->label->resize(w,h);
     ui->label->show();
+
+    is_cut = true;
 }
 
+
+void Intelligent_Scissor::on_SaveMask_clicked()
+{
+    if(!mission_finish)
+        return;
+    //if(is_start)
+    //    return;
+
+    QString path = QFileDialog::getSaveFileName(this, tr("Save Mask Image"), ".", tr("Image Files(*.jpg *.png *.bmp)"));
+    if(path.length() == 0)
+    {
+            QMessageBox::information(NULL, tr("Path"), tr("You didn't select any path."));
+            //path = QFileDialog::getOpenFileName(this, tr("Open Image"), ".", tr("Image Files(*.jpg *.png *.bmp)"));
+    }
+    else
+    {
+    std::string utf8_path = path.toUtf8().constData();
+     imwrite( utf8_path, final_mask );
+    }
+}
+
+void Intelligent_Scissor::on_pushButton_2_clicked()
+{
+    //if()
+    //    return;
+
+    if(image_history.empty())
+        return;
+    QString path = QFileDialog::getSaveFileName(this, tr("Open Image"), ".", tr("Image Files(*.jpg *.png *.bmp)"));
+    if(path.length() == 0)
+    {
+            QMessageBox::information(NULL, tr("Path"), tr("You didn't select any path."));
+            //path = QFileDialog::getOpenFileName(this, tr("Open Image"), ".", tr("Image Files(*.jpg *.png *.bmp)"));
+    }
+    else
+    {
+    std::string utf8_path = path.toUtf8().constData();
+     imwrite( utf8_path, result );
+    }
+}

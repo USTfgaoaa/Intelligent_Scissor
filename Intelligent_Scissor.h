@@ -86,14 +86,18 @@ private slots:
 
     void on_Mask_clicked();
 
-    void on_Debug_clicked();
+    //void on_Debug_clicked();
 
     void on_Cut_clicked();
+
+    void on_SaveMask_clicked();
+
+    void on_pushButton_2_clicked();
 
 private:
     Ui::Intelligent_Scissor *ui;
 
-    cv::Mat src, dst, tmp, src_backup;
+    cv::Mat src, tmp, src_backup;
     cv::Mat cost_graph;
     cv::Mat result;
     cv::Mat mask_to_find;
@@ -112,6 +116,7 @@ private:
     bool mouse_press;
     bool is_finished;
     bool mission_finish;
+    bool is_cut;
 
     int press_count;
     int row_up;
@@ -122,6 +127,8 @@ private:
 
     void open();
     void save();
+    void undo();
+
     bool eventFilter(QObject *obj, QEvent *event);
 
     std::string window_name;
