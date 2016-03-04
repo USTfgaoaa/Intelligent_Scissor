@@ -72,7 +72,7 @@ private slots:
 
     void on_actionCost_Graph_triggered();
 
-    void on_pushButton_clicked();
+    //void on_pushButton_clicked();
 
     void on_Finish_clicked();
 
@@ -117,6 +117,7 @@ private:
     bool is_finished;
     bool mission_finish;
     bool is_cut;
+    bool should_finish;
 
     int press_count;
     int row_up;

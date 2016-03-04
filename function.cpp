@@ -136,7 +136,7 @@ cv::Mat pre_process(cv::Mat cv_image)
         }
     }
 
-
+        //cout<<d_max<<endl;
     double tmp_d0, tmp_d1, tmp_d2, tmp_d3, tmp_d4, tmp_d5, tmp_d6, tmp_d7;
 
     for(int i = 1; i < row-1; ++ i)

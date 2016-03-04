@@ -51,6 +51,7 @@ Intelligent_Scissor::Intelligent_Scissor(QWidget *parent) :
     is_finished = false;
     mission_finish = false;
     is_cut = false;
+    should_finish = false;
 
     last_end_row = inf;
     last_end_col = inf;
@@ -95,13 +96,15 @@ bool Intelligent_Scissor::eventFilter(QObject *obj, QEvent *event)
     end_col = mouseEvent->pos().x();
     end_row = mouseEvent->pos().y();
 
-     if(abs(end_col - first_pt_col) < 5 && abs(end_row - first_pt_row) < 5 && press_count > 1)
+     if(abs(end_col - first_pt_col) < 5 && abs(end_row - first_pt_row) < 5 && press_count > 1 && mouse_press)
         {
+
             //cout<<"find loop closure ..."<<endl;
             end_col = first_pt_col;
             end_row = first_pt_row;
 
-            is_finished = true;
+            should_finish = true;
+            //is_finished = true;
          }
 
     if(!mouse_press)
@@ -316,6 +319,8 @@ void Intelligent_Scissor::mousePressEvent(QMouseEvent *e)
    mouse_x = e->x();
    mouse_y = e->y();
 
+   if(should_finish)
+       is_finished = true;
    if(mission_finish)
     {
        seed_x = mouse_x;
@@ -431,11 +436,21 @@ void Intelligent_Scissor::process(int start_row, int start_col)
     }
 
 //    /cout<<"prepare path finding ... "<<endl;
+    int count = 0;
     while (!pq.empty())
     {
         Node q = pq.top();
         pq.pop();
         int q_row = q.row, q_col = q.col;
+
+
+
+        if(node_array[q_row][q_col].state == EXPANDED)
+        {
+            count ++;
+            //cout<<"count: "<<count<<endl;
+            continue;
+        }
 
         q.state = EXPANDED;
         assert(node_array[q_row][q_col].state=2);
@@ -489,6 +504,7 @@ void Intelligent_Scissor::process(int start_row, int start_col)
                         {
                             r.prevNode = &node_array[q_row][ q_col];
                             r.totalCost = q.totalCost + q.linkCost[link_idx];
+                            pq.push(r);
 
                             node_array[q_row + i][ q_col + j].prevNode = &node_array[q_row][ q_col];
                             node_array[q_row + i][ q_col + j].totalCost = q.totalCost + q.linkCost[link_idx];
@@ -563,12 +579,12 @@ void Intelligent_Scissor::on_pushButton_clicked()
 
 void Intelligent_Scissor::on_Finish_clicked()
 {
-    if(is_finished)
-    {
+    //if(is_finished)
+    //{
    // cout<<"finish ok .."<<endl;
     is_start = false;
     mission_finish = true;
-    }
+    //}
 }
 
 void Intelligent_Scissor::on_Start_clicked()
